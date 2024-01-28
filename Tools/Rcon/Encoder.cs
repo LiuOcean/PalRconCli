@@ -31,7 +31,7 @@ public class Encoder
             byte[] bodyBytes = new byte[bodyLen];
             Array.Copy(bytes, 12, bodyBytes, 0, bodyLen);
             Array.Resize(ref bodyBytes, bodyLen);
-            return new RconMessage(len, id, (RconMessageType) type, Encoding.ASCII.GetString(bodyBytes));
+            return new RconMessage(len, id, (RconMessageType) type, Encoding.UTF8.GetString(bodyBytes));
         }
         else
         {

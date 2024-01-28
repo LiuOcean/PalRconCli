@@ -27,21 +27,20 @@ public class RconClient : IDisposable
 
     public bool Authenticate(string password)
     {
-        RconMessage resp;
-        return sendMessage(
+        return _SendMessage(
             new RconMessage(
                 password.Length + Encoder.HeaderLength,
                 Interlocked.Increment(ref lastID),
                 RconMessageType.Authenticate,
                 password
             ),
-            out resp
+            out _
         );
     }
 
     public bool SendCommand(string command, out RconMessage resp)
     {
-        return sendMessage(
+        return _SendMessage(
             new RconMessage(
                 command.Length + Encoder.HeaderLength,
                 Interlocked.Increment(ref lastID),
@@ -52,20 +51,12 @@ public class RconClient : IDisposable
         );
     }
 
-    private bool sendMessage(RconMessage req, out RconMessage resp)
+    private bool _SendMessage(RconMessage req, out RconMessage resp)
     {
         // Send the message.
         byte[] encoded = Encoder.EncodeMessage(req);
-        try
-        {
-            conn.Write(encoded, 0, encoded.Length);
-        }
-        catch(Exception e)
-        {
-            AnsiConsole.WriteException(e);
-            resp = default;
-            return false;
-        }
+        
+        conn.Write(encoded, 0, encoded.Length);
 
         // Receive the response.
         byte[] respBytes = new byte[MaxMessageSize];

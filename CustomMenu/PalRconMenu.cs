@@ -10,7 +10,8 @@ public class PalRconEnter : AMenuEnter
 {
     protected override async Task _WhenEnter(CancellationToken token)
     {
-        RconUtils.TestConnection();
+        // 检测链接
+        using var client = RconUtils.GetClient();
 
         await Task.CompletedTask;
     }
@@ -71,12 +72,17 @@ public class PalPlayer2Me : AMenuExecute
 {
     protected override async Task _Execute(CancellationToken token)
     {
-        if(!RconUtils.SelectPlayer(out var id))
+        if(!RconUtils.SelectPlayer(out var me))
         {
             return;
         }
 
-        var result = RconUtils.SendMsg($"teleporttome {id}");
+        if(!RconUtils.SelectPlayer(out var player))
+        {
+            return;
+        }
+
+        var result = RconUtils.SendMsg($"teleporttome {me} {player}");
 
         AnsiConsole.WriteLine($"执行结果: {result}");
 

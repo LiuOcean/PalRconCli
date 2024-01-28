@@ -20,17 +20,17 @@ public class PalUserInfo
 
 public static class RconUtils
 {
-    private static RconClient _client;
-
-    public static void TestConnection()
+    public static RconClient GetClient()
     {
         var config = AutoConfigUtils.GetAutoConfig<PalRconAutoConfig>();
-        _client = new RconClient(config.server_addr, config.server_port);
+        var result = new RconClient(config.server_addr, config.server_port);
 
-        if(!_client.Authenticate(config.password))
+        if(!result.Authenticate(config.password))
         {
             throw new Exception("password is incorrect");
         }
+
+        return result;
     }
 
     public static bool SelectPlayer(out string steam_id)
@@ -45,7 +45,9 @@ public static class RconUtils
             return false;
         }
 
-        var player = AnsiConsole.Prompt(new SelectionPrompt<PalUserInfo>().UseConverter(p => p.name));
+        var player = AnsiConsole.Prompt(
+            new SelectionPrompt<PalUserInfo>().AddChoices(players).UseConverter(p => p.name)
+        );
 
         steam_id = player.steam_id;
         return true;
@@ -55,7 +57,9 @@ public static class RconUtils
     {
         var result = new List<PalUserInfo>();
 
-        _client.SendCommand("showplayers", out var resp);
+        using var client = GetClient();
+
+        client.SendCommand("showplayers", out var resp);
 
         if(string.IsNullOrEmpty(resp.Body))
         {
@@ -86,7 +90,9 @@ public static class RconUtils
 
     public static string SendMsg(string command)
     {
-        _client.SendCommand(command, out var resp);
+        using var client = GetClient();
+
+        client.SendCommand(command, out var resp);
 
         return resp.Body;
     }
